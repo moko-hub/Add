@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Lawyer Diary</title>
+
+<style>
+
+body{
+background:#000;
+color:#fff;
+font-family:Arial, sans-serif;
+margin:0;
+padding:20px;
+}
+
+h1{
+text-align:center;
+font-weight:bold;
+}
+
+.container{
+max-width:900px;
+margin:auto;
+}
+
+input,button,select{
+padding:10px;
+margin:5px;
+border:none;
+border-radius:6px;
+font-weight:bold;
+}
+
+input{
+width:180px;
+}
+
+button{
+background:#222;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#444;
+}
+
+.case-card{
+border:1px solid #444;
+padding:15px;
+margin-top:10px;
+border-radius:10px;
+}
+
+.paid{
+color:#00ff88;
+font-weight:bold;
+}
+
+.due{
+color:#ff4444;
+font-weight:bold;
+}
+
+.header-controls{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+margin-bottom:20px;
+}
+
+.search{
+margin-bottom:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>LAWYER DIARY</h1>
+
+<div class="header-controls">
+
+<button onclick="prevDay()">Previous</button>
+
+<input type="date" id="datePicker">
+
+<button onclick="nextDay()">Next</button>
+
+</div>
+
+<div class="search">
+
+<input type="text" id="search" placeholder="Search case / party" onkeyup="renderCases()">
+
+</div>
+
+<h2>Add Case</h2>
+
+<input id="caseNo" placeholder="Case Number">
+<input id="party1" placeholder="Party 1">
+<input id="party2" placeholder="Party 2">
+<input id="court" placeholder="Court">
+
+<select id="payment">
+<option value="Due">Payment Due</option>
+<option value="Paid">Payment Paid</option>
+</select>
+
+<button onclick="addCase()">Add</button>
+
+<h2>Cases</h2>
+
+<div id="caseList"></div>
+
+</div>
+
+<script>
+
+let cases = JSON.parse(localStorage.getItem("cases")) || [];
+
+const datePicker = document.getElementById("datePicker");
+
+datePicker.valueAsDate = new Date();
+
+function saveCases(){
+localStorage.setItem("cases",JSON.stringify(cases));
+}
+
+function addCase(){
+
+let caseObj = {
+
+date:datePicker.value,
+caseNo:document.getElementById("caseNo").value,
+party1:document.getElementById("party1").value,
+party2:document.getElementById("party2").value,
+court:document.getElementById("court").value,
+payment:document.getElementById("payment").value
+
+};
+
+cases.push(caseObj);
+
+saveCases();
+
+renderCases();
+
+}
+
+function renderCases(){
+
+let list = document.getElementById("caseList");
+
+list.innerHTML="";
+
+let search = document.getElementById("search").value.toLowerCase();
+
+cases.forEach(c=>{
+
+if(c.date !== datePicker.value) return;
+
+let text = (c.caseNo + c.party1 + c.party2 + c.court).toLowerCase();
+
+if(!text.includes(search)) return;
+
+let div=document.createElement("div");
+
+div.className="case-card";
+
+div.innerHTML=`
+
+<b>Case:</b> ${c.caseNo}<br>
+<b>Party:</b> ${c.party1} vs ${c.party2}<br>
+<b>Court:</b> ${c.court}<br>
+<b>Status:</b> <span class="${c.payment=="Paid"?"paid":"due"}">${c.payment}</span>
+
+`;
+
+list.appendChild(div);
+
+});
+
+}
+
+function prevDay(){
+
+let d=new Date(datePicker.value);
+
+d.setDate(d.getDate()-1);
+
+datePicker.value=d.toISOString().split("T")[0];
+
+renderCases();
+
+}
+
+function nextDay(){
+
+let d=new Date(datePicker.value);
+
+d.setDate(d.getDate()+1);
+
+datePicker.value=d.toISOString().split("T")[0];
+
+renderCases();
+
+}
+
+datePicker.addEventListener("change",renderCases);
+
+renderCases();
+
+</script>
+
+</body>
+</html>
